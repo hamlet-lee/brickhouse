@@ -90,7 +90,9 @@ public interface InspectorHandle {
 
             for (int i = 0; i < fieldNames.size(); ++i) {
                 String key = fieldNames.get(i);
-                JsonNode valNode = jsonNode.get(key);
+                //support reading upper case names by camal case
+                String camalCaseKey = FromJsonUDF.ToCamelCase(key);
+                JsonNode valNode = jsonNode.get(camalCaseKey);
                 InspectorHandle valHandle = handleList.get(i);
 
                 Object valObj = valHandle.parseJson(valNode);
