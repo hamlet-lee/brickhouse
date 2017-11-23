@@ -66,6 +66,7 @@ public interface InspectorHandle {
          *
          */
         private List<String> fieldNames;
+        private List<String> camalCaseNames;
         private List<InspectorHandle> handleList;
 
 
@@ -76,6 +77,8 @@ public interface InspectorHandle {
             List<? extends StructField> refs = structInspector.getAllStructFieldRefs();
             for (StructField ref : refs) {
                 fieldNames.add(ref.getFieldName());
+                String camalCaseKey = FromJsonUDF.ToCamelCase(ref.getFieldName().toLowerCase());
+                camalCaseNames.add(camalCaseKey);
                 InspectorHandle fieldHandle = InspectorHandleFactory.GenerateInspectorHandle(ref.getFieldObjectInspector());
                 handleList.add(fieldHandle);
             }
@@ -89,9 +92,8 @@ public interface InspectorHandle {
             List<Object> valList = new ArrayList<Object>();
 
             for (int i = 0; i < fieldNames.size(); ++i) {
-                String key = fieldNames.get(i);
                 //support reading upper case names by camal case
-                String camalCaseKey = FromJsonUDF.ToCamelCase(key);
+                String camalCaseKey = camalCaseNames.get(i);
                 JsonNode valNode = jsonNode.get(camalCaseKey);
                 InspectorHandle valHandle = handleList.get(i);
 
