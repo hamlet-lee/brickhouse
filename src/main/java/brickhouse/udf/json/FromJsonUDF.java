@@ -52,7 +52,7 @@ import java.io.IOException;
 public class FromJsonUDF extends GenericUDF {
     private StringObjectInspector jsonInspector;
     private InspectorHandle inspHandle;
-
+    private boolean ignoreError = true;
 
     @Override
     public Object evaluate(DeferredObject[] arg0) throws HiveException {
@@ -66,8 +66,14 @@ public class FromJsonUDF extends GenericUDF {
 
             return inspHandle.parseJson(jsonNode);
         } catch (JsonProcessingException e) {
+            if( ignoreError ) {
+                return null;
+            }
             throw new HiveException(e);
         } catch (IOException e) {
+            if( ignoreError ) {
+                return null;
+            }
             throw new HiveException(e);
         }
     }
@@ -80,7 +86,7 @@ public class FromJsonUDF extends GenericUDF {
     @Override
     public ObjectInspector initialize(ObjectInspector[] arg0)
             throws UDFArgumentException {
-        if (arg0.length != 2) {
+        if (arg0.length < 2) {
             throw new UDFArgumentException("from_json expects a JSON string and a template object");
         }
         if (arg0[0].getCategory() != Category.PRIMITIVE
@@ -99,6 +105,14 @@ public class FromJsonUDF extends GenericUDF {
             inspHandle = InspectorHandle.InspectorHandleFactory.GenerateInspectorHandleFromTypeInfo(typeStr);
         } else {
             inspHandle = InspectorHandle.InspectorHandleFactory.GenerateInspectorHandle(arg0[1]);
+        }
+        if( arg0.length > 2) {
+            if( !(arg0[2] instanceof  ConstantObjectInspector )) {
+                throw new UDFArgumentException("option must be constant");
+            }
+            ConstantObjectInspector optionInsp = (ConstantObjectInspector) arg0[2];
+            String optStr = optionInsp.getWritableConstantValue().toString();
+            ignoreError = optStr.equalsIgnoreCase("true");
         }
 
         return inspHandle.getReturnType();
