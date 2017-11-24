@@ -72,6 +72,7 @@ public interface InspectorHandle {
 
         public StructHandle(StructObjectInspector structInspector) throws UDFArgumentException {
             fieldNames = new ArrayList<String>();
+            camalCaseNames = new ArrayList<String>();
             handleList = new ArrayList<InspectorHandle>();
 
             List<? extends StructField> refs = structInspector.getAllStructFieldRefs();
